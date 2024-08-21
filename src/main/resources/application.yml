@@ -1,0 +1,54 @@
+server:
+  port: 8080
+
+sentry:
+  logging:
+    enabled: true
+    minimum-event-level: warn
+
+spring:
+  jpa:
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        jdbc:
+          time_zone: UTC+3
+    hibernate:
+      ddl-auto: none
+    show-sql: false
+    open-in-view: true
+  mvc:
+    converters:
+      preferred-json-mapper: jackson
+  jackson:
+    time-zone: Indian/Antananarivo
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+
+aws:
+  region: eu-west-3
+  cognito:
+    jwt:
+      jwsAlgorithm: RS256
+      readTimeout: 2000
+      connectTimeout: 2000
+
+# Uncomment the lines below if needed
+# test:
+#   aws:
+#     cognito:
+#       idToken: <id_token>
+# aws:
+#   ses:
+#     source: <email_contact>
+
+casdoor:
+  endpoint: ${CASDOOR_ENDPOINT}
+  client-id: ${CASDOOR_CLIENT_ID}
+  client-secret: ${CASDOOR_CLIENT_SECRET}
+  #certificate: ${CASDOOR_CERTIFICATE}
+  organization-name: ${CASDOOR_ORGANIZATION_NAME}
+  application-name: ${CASDOOR_APPLICATION_NAME}
+  redirect-url: ${CASDOOR_REDIRECT_URL}

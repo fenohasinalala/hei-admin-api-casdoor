@@ -10,17 +10,21 @@ import static school.hei.haapi.endpoint.rest.security.model.Role.STUDENT;
 import static school.hei.haapi.endpoint.rest.security.model.Role.TEACHER;
 
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
+import org.springframework.security.authentication.dao.AbstractUserDetailsAuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AnonymousAuthenticationFilter;
+import org.springframework.security.web.authentication.logout.LogoutHandler;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.web.util.matcher.NegatedRequestMatcher;
 import org.springframework.security.web.util.matcher.OrRequestMatcher;
@@ -37,11 +41,11 @@ public class SecurityConf {
   private static final String AUTHORIZATION_HEADER = "Authorization";
   private static final String STUDENT_COURSE = "/students/*/courses";
   private final AwardedCourseService awardedCourseService;
-  private final AuthProvider authProvider;
+  private final AbstractUserDetailsAuthenticationProvider authProvider;
   private final HandlerExceptionResolver exceptionResolver;
 
   public SecurityConf(
-      AuthProvider authProvider,
+      CasdoorAuthProvider authProvider,
       // InternalToExternalErrorHandler behind
       @Qualifier("handlerExceptionResolver") HandlerExceptionResolver exceptionResolver,
       AwardedCourseService awardedCourseService) {
@@ -78,6 +82,18 @@ public class SecurityConf {
 
         // authenticate
         .authenticationProvider(authProvider)
+        .logout(
+            logoutConfig ->
+                logoutConfig
+                    .logoutUrl("/api/logout")
+                    .addLogoutHandler(
+                        new LogoutHandler() {
+                          @Override
+                          public void logout(
+                              HttpServletRequest request,
+                              HttpServletResponse response,
+                              Authentication authentication) {}
+                        }))
         .addFilterBefore(
             bearerFilter(
                 new NegatedRequestMatcher(
@@ -90,6 +106,9 @@ public class SecurityConf {
                         new AntPathRequestMatcher("/health/event2", GET.name()),
                         new AntPathRequestMatcher("/health/event/uuids", POST.name()),
                         new AntPathRequestMatcher("/health/bucket", GET.name()),
+                        // Casdoor endpoint
+                        new AntPathRequestMatcher("/api/redirect-url", GET.name()),
+                        new AntPathRequestMatcher("/api/signin", POST.name()),
                         new AntPathRequestMatcher("/**", OPTIONS.toString())))),
             AnonymousAuthenticationFilter.class)
 
@@ -112,6 +131,13 @@ public class SecurityConf {
                     .requestMatchers(GET, "/health/bucket")
                     .permitAll()
                     .requestMatchers(OPTIONS, "/**")
+                    .permitAll()
+                    // casdoor endpoints
+                    .requestMatchers(POST, "/api/signin")
+                    .permitAll()
+                    .requestMatchers(GET, "/api/redirect-url")
+                    .permitAll()
+                    .requestMatchers(GET, "/api/userinfo")
                     .permitAll()
                     .requestMatchers(GET, "/whoami")
                     .authenticated()
