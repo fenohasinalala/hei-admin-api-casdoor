@@ -1,6 +1,7 @@
 package school.hei.haapi.endpoint.rest.security.casdoorAuthentication; // Copyright 2022 The Casdoor
-                                                                       // Authors. All Rights
-                                                                       // Reserved.
+
+// Authors. All Rights
+// Reserved.
 
 //
 // Licensed under the Apache License, Version 2.0 (the "License");

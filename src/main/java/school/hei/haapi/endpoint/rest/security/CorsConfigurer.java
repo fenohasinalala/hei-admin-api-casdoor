@@ -10,11 +10,12 @@ public class CorsConfigurer implements WebMvcConfigurer {
   private final String frontendUrl;
   private final String casdoorUrl;
 
-    public CorsConfigurer(@Value("${casdoor.redirect-url}") String redirectUrl,
-                          @Value("${casdoor.endpoint}") String casdoorUrl) {
-      this.frontendUrl = parseOrigin(redirectUrl);
-      this.casdoorUrl = parseOrigin(casdoorUrl);
-    }
+  public CorsConfigurer(
+      @Value("${casdoor.redirect-url}") String redirectUrl,
+      @Value("${casdoor.endpoint}") String casdoorUrl) {
+    this.frontendUrl = parseOrigin(redirectUrl);
+    this.casdoorUrl = parseOrigin(casdoorUrl);
+  }
 
   private String parseOrigin(String url) {
     int protocol = url.startsWith("https://") ? 5 : 4;
@@ -27,8 +28,7 @@ public class CorsConfigurer implements WebMvcConfigurer {
     registry
         .addMapping("/**")
         .allowedMethods("*")
-        .allowedOrigins(
-            frontendUrl,casdoorUrl)
+        .allowedOrigins(frontendUrl, casdoorUrl)
         .allowCredentials(true);
   }
 }
