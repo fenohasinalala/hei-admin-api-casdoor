@@ -2,6 +2,7 @@ package school.hei.haapi.endpoint.rest.security;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.casbin.casdoor.entity.CasdoorRole;
 import org.casbin.casdoor.entity.CasdoorUser;
 import org.casbin.casdoor.exception.CasdoorAuthException;
 import org.casbin.casdoor.service.CasdoorAuthService;
@@ -48,6 +49,19 @@ public class CasdoorAuthProvider extends AbstractUserDetailsAuthenticationProvid
     } catch (CasdoorAuthException exception) {
       logger.error("casdoor auth exception", exception);
       throw new UsernameNotFoundException("Bad credentials"); // / TODO: custom error message
+    }
+    boolean hasRole = false;
+    for (CasdoorRole role : casdoorUser.getRoles()) {
+      if (role.getName().contains("role_hei")) {
+        hasRole = true;
+        break;
+      }
+    }
+    if (!hasRole) {
+      logger.error(
+          "casdoor auth exception",
+          new Throwable("User with email " + casdoorUser.getEmail() + " don't have correct role"));
+      throw new UsernameNotFoundException("Bad credentials");
     }
 
     return new Principal(userService.getByEmail(casdoorUser.getEmail()), bearer);
