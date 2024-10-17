@@ -20,7 +20,7 @@ import school.hei.haapi.service.UserService;
 
 @Component
 @AllArgsConstructor
-@Slf4j
+//@Slf4j
 public class CasdoorAuthProvider extends AbstractUserDetailsAuthenticationProvider {
 
   private static final String BEARER_PREFIX = "Bearer ";
@@ -37,7 +37,6 @@ public class CasdoorAuthProvider extends AbstractUserDetailsAuthenticationProvid
   protected UserDetails retrieveUser(
       String username, UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken) {
     String bearer = getBearer(usernamePasswordAuthenticationToken);
-    log.info("bearer: {}", bearer);
 
     if (bearer == null) {
       throw new UsernameNotFoundException("Bad credentials");
