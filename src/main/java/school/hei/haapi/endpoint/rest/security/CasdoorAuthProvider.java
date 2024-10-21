@@ -1,11 +1,11 @@
 package school.hei.haapi.endpoint.rest.security;
 
-import lombok.AllArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.casbin.casdoor.entity.CasdoorRole;
+import java.util.Arrays;
+import lombok.RequiredArgsConstructor;
 import org.casbin.casdoor.entity.CasdoorUser;
 import org.casbin.casdoor.exception.CasdoorAuthException;
 import org.casbin.casdoor.service.CasdoorAuthService;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.authentication.dao.AbstractUserDetailsAuthenticationProvider;
 import org.springframework.security.core.Authentication;
@@ -16,16 +16,19 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
 import school.hei.haapi.endpoint.rest.controller.casdoorAuthentication.model.CustomUserDetails;
 import school.hei.haapi.endpoint.rest.security.model.Principal;
+import school.hei.haapi.model.User;
 import school.hei.haapi.service.UserService;
 
 @Component
-@AllArgsConstructor
-//@Slf4j
+@RequiredArgsConstructor
+// @Slf4j
 public class CasdoorAuthProvider extends AbstractUserDetailsAuthenticationProvider {
-
   private static final String BEARER_PREFIX = "Bearer ";
   private final UserService userService;
   private final CasdoorAuthService casdoorAuthService;
+
+  @Value("${CASDOOR_ORGANIZATION_NAME}")
+  String casdoorOrganizationName;
 
   @Override
   protected void additionalAuthenticationChecks(
@@ -49,13 +52,15 @@ public class CasdoorAuthProvider extends AbstractUserDetailsAuthenticationProvid
       logger.error("casdoor auth exception", exception);
       throw new UsernameNotFoundException("Bad credentials"); // / TODO: custom error message
     }
-    boolean hasRole = false;
-    for (CasdoorRole role : casdoorUser.getRoles()) {
-      if (role.getName().contains("role_hei")) {
-        hasRole = true;
-        break;
-      }
-    }
+    boolean hasRole =
+        casdoorUser.getRoles().stream()
+            .anyMatch(
+                role ->
+                    Arrays.stream(User.Role.values())
+                        .anyMatch(
+                            userRole ->
+                                role.getName().equalsIgnoreCase(userRole.name())
+                                    && role.getOwner().equals(casdoorOrganizationName)));
     if (!hasRole) {
       logger.error(
           "casdoor auth exception",
