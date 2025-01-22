@@ -22,6 +22,7 @@ import static school.hei.haapi.integration.conf.TestUtils.announcementForTeacher
 import static school.hei.haapi.integration.conf.TestUtils.assertThrowsForbiddenException;
 import static school.hei.haapi.integration.conf.TestUtils.createAnnouncementWithGroupTarget;
 import static school.hei.haapi.integration.conf.TestUtils.expectedAnnouncementCreated1;
+import static school.hei.haapi.integration.conf.TestUtils.setUpCasdoor;
 import static school.hei.haapi.integration.conf.TestUtils.setUpCognito;
 import static school.hei.haapi.integration.conf.TestUtils.setUpS3Service;
 
@@ -187,6 +188,7 @@ public class AnnouncementIT extends MockedThirdParties {
 
   @BeforeEach
   void setUp() {
+    setUpCasdoor(casdoorAuthServiceMock);
     setUpCognito(cognitoComponentMock);
     setUpS3Service(fileService, student1());
   }
